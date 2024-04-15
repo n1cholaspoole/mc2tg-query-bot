@@ -1,0 +1,13 @@
+version: '3.2'
+
+services:
+  mc2tgbot:
+    image: mc2tgbot
+    build: .
+    container_name: mc2tgbot
+    environment:
+      API_ID:
+      API_HASH: ""
+      BOT_TOKEN: ""
+      CHAT_ID:
+      SERVER_ADDRESS: ""
