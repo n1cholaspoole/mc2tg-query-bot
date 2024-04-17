@@ -55,21 +55,24 @@ async def main():
 
     while True:
         server_status = get_server_status()
-        print(f"Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
+        if server_status[1]:
+            print(f"Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
 
-        new_players = check_new_player(server_status, last_players)
-        for new_player in new_players:
-            message = f"{new_player} joined."
-            print(message)
-            await bot.send_message(chat_id, message)
+            new_players = check_new_player(server_status, last_players)
+            for new_player in new_players:
+                message = f"{new_player} joined."
+                print(message)
+                await bot.send_message(chat_id, message)
 
-        left_players = check_left_player(server_status, last_players)
-        for left_player in left_players:
-            message = f"{left_player} left."
-            print(message)
-            await bot.send_message(chat_id, message)
+            left_players = check_left_player(server_status, last_players)
+            for left_player in left_players:
+                message = f"{left_player} left."
+                print(message)
+                await bot.send_message(chat_id, message)
 
-        last_players = [player["name_clean"] for player in server_status[1]]
+            last_players = [player["name_clean"] for player in server_status[1]]
+        else:
+            print("Retrying in 60 seconds.")
 
         await asyncio.sleep(60)
 
