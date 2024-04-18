@@ -55,7 +55,7 @@ async def main():
 
     while True:
         server_status = get_server_status()
-        if server_status[1]:
+        if server_status[0]:
             print(f"Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
 
             new_players = check_new_player(server_status, last_players)
@@ -71,8 +71,10 @@ async def main():
                 await bot.send_message(chat_id, message)
 
             last_players = [player["name_clean"] for player in server_status[1]]
+        elif server_status[0] is False:
+            print("The server is offline. Retrying in 60 seconds.")
         else:
-            print("Retrying in 60 seconds.")
+            print("Error has occurred. Retrying in 60 seconds.")
 
         await asyncio.sleep(60)
 
