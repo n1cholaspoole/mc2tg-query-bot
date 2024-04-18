@@ -1,4 +1,5 @@
 from telethon import TelegramClient
+from datetime import datetime
 import requests
 import asyncio
 import os
@@ -16,7 +17,7 @@ def get_server_status():
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            data = data["online"], data.get("players", {}).get("list", [])
+            data = data["online"], [player["name_clean"] for player in data.get("players", {}).get("list", []) if "name_clean" in player]
             return data
         else:
             print("Error:", response.status_code)
@@ -28,7 +29,7 @@ def get_server_status():
 def check_new_player(server_status, last_players):
     online, players = server_status
     if online:
-        current_players = [player["name_clean"] for player in players]
+        current_players = [player for player in players]
 
         new_players = [player for player in current_players if player not in last_players]
         return new_players
@@ -39,7 +40,7 @@ def check_new_player(server_status, last_players):
 def check_left_player(server_status, last_players):
     online, players = server_status
     if online:
-        current_players = [player["name_clean"] for player in players]
+        current_players = [player for player in players]
 
         left_players = [player for player in last_players if player not in current_players]
         return left_players
@@ -55,8 +56,12 @@ async def main():
 
     while True:
         server_status = get_server_status()
-        if server_status[0]:
-            print(f"Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
+        online, players = server_status
+
+        current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+        if online:
+            print(f"{current_time} | Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
 
             new_players = check_new_player(server_status, last_players)
             for new_player in new_players:
@@ -70,12 +75,21 @@ async def main():
                 print(message)
                 await bot.send_message(chat_id, message)
 
-            last_players = [player["name_clean"] for player in server_status[1]]
-        elif server_status[0] is False:
-            print("The server is offline. Retrying in 60 seconds.")
-        else:
-            print("Error has occurred. Retrying in 60 seconds.")
+            last_players = [player for player in players]
+        elif online is False:
+            print(f"{current_time} | The server is offline.")
+            if last_players:
+                print("Consider all players out.")
+                left_players = check_left_player(server_status, last_players)
+                for left_player in left_players:
+                    message = f"{left_player} left."
+                    print(message)
+                    await bot.send_message(chat_id, message)
 
+                last_players = []
+            print("Retrying in 60 seconds.")
+        else:
+            print(f"{current_time} | Error has occurred. Retrying in 60 seconds.")
         await asyncio.sleep(60)
 
 
