@@ -58,10 +58,11 @@ async def main():
         server_status = get_server_status()
         online, players = server_status
 
-        current_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        now = datetime.now()
+        timestamp = now.strftime("%d-%m-%Y %H:%M:%S")
 
         if online:
-            print(f"{current_time} | Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
+            print(f"{timestamp} | Online: {str(server_status[0]).lower()}, Players: {server_status[1]}")
 
             new_players = check_new_player(server_status, last_players)
             for new_player in new_players:
@@ -77,7 +78,7 @@ async def main():
 
             last_players = [player for player in players]
         elif online is False:
-            print(f"{current_time} | The server is offline.")
+            print(f"{timestamp} | The server is offline.")
             if last_players:
                 print("Consider all players out.")
                 left_players = check_left_player(server_status, last_players)
@@ -87,10 +88,10 @@ async def main():
                     await bot.send_message(chat_id, message)
 
                 last_players = []
-            print("Retrying in 60 seconds.")
+            print("Retrying in a minute.")
         else:
-            print(f"{current_time} | Error has occurred. Retrying in 60 seconds.")
-        await asyncio.sleep(60)
+            print(f"{timestamp} | Error has occurred. Retrying in a minute.")
+        await asyncio.sleep(60 - now.second)
 
 
 if __name__ == "__main__":
